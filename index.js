@@ -29,11 +29,11 @@ if (https_proxy !== undefined && https_proxy !== "") {
     });
 }
 
-var s3 = new aws.S3({
+const s3 = new aws.S3({
     apiVersion: '2006-03-01',
     region: region
 });
-var dynamoDB = new aws.DynamoDB({
+const dynamoDB = new aws.DynamoDB({
     apiVersion: '2012-08-10',
     region: region
 });
@@ -630,7 +630,7 @@ exports.handler = function (event, context) {
                     console.log("Batch age " + config.batchTimeoutSecs.N + " seconds reached");
                     doProcessBatch = true;
                 } else {
-                    if (debug === true) {
+                    if (debug === true && config.batchTimeoutSecs) {
                         console.log("Current batch age of " + (common.now() - batchCreateDate) + " seconds below batch timeout: "
                             + (config.batchTimeoutSecs.N ? config.batchTimeoutSecs.N : "None Defined"));
                     }
@@ -1435,6 +1435,7 @@ exports.handler = function (event, context) {
     };
     /* end of runtime functions */
 
+    // In the upstream repo, these are s3 events. In our fork they are SQS queue tasks.
     try {
         if (debug) {
             console.log(JSON.stringify(event));
@@ -1447,92 +1448,98 @@ exports.handler = function (event, context) {
             context.done(null, null);
         } else {
             if (event.Records.length > 1) {
+                // the SQS queue handler must be set to pull one event at time.
                 context.done(error, "Unable to process multi-record events");
             } else {
-                var r = event.Records[0];
+                const r = event.Records[0];
 
-                // ensure that we can process this event based on a variety
-                // of criteria
-                var noProcessReason;
-                if (r.eventSource !== "aws:s3") {
-                    noProcessReason = "Invalid Event Source " + r.eventSource;
-                }
-                if (!(r.eventName === "ObjectCreated:Copy" || r.eventName === "ObjectCreated:Put" || r.eventName === 'ObjectCreated:CompleteMultipartUpload')) {
-                    noProcessReason = "Invalid Event Name " + r.eventName;
-                }
-                if (r.s3.s3SchemaVersion !== "1.0") {
-                    noProcessReason = "Unknown S3 Schema Version " + r.s3.s3SchemaVersion;
-                }
+                const {body} = r;
+                const params = JSON.parse(body);
 
-                if (noProcessReason) {
-                    console.log(noProcessReason);
-                    context.done(error, noProcessReason);
+                if (params.s3 === undefined) {
+                    const msg = "Missing s3 data in webhook, must add AWS Account ID to ControlShift ";
+                    console.log(msg);
+
+                    context.done(error, msg);
                 } else {
+
                     // extract the s3 details from the event
-                    var inputInfo = {
+                    let inputInfo = {
                         bucket: undefined,
                         key: undefined,
                         prefix: undefined,
                         inputFilename: undefined
                     };
 
-                    inputInfo.bucket = r.s3.bucket.name;
-                    inputInfo.key = decodeURIComponent(r.s3.object.key);
-
-                    // remove the bucket name from the key, if we have
-                    // received it - this happens on object copy
-                    inputInfo.key = inputInfo.key.replace(inputInfo.bucket + "/", "");
-
-                    var keyComponents = inputInfo.key.split('/');
+                    inputInfo.bucket = params.s3.bucket;
+                    inputInfo.key = params.s3.key;
+                    const keyComponents = inputInfo.key.split('/');
                     inputInfo.inputFilename = keyComponents[keyComponents.length - 1];
 
-                    // remove the filename from the prefix value
-                    var searchKey = inputInfo.key.replace(inputInfo.inputFilename, '').replace(/\/$/, '');
+                    // we construct this prefix from the webhook/sqs event to match the configuration we intend to use for this load. It does not match the actual
+                    // stored s3 file path as in the upstream repo. Instead, this is essentially the "config key" in dynamodb that we would like to use
+                    // for this ingest.
+                    inputInfo.prefix = `${params.s3.bucket}/${params.kind}/${params.table}`;
 
-                    // transform hive style dynamic prefixes into static
-                    // match prefixes and set the prefix in inputInfo
-                    inputInfo.prefix = inputInfo.bucket + '/' + searchKey.transformHiveStylePrefix();
+                    console.log('inputInfo ' + JSON.stringify(inputInfo));
 
-                    // add the object size to inputInfo
-                    inputInfo.size = r.s3.object.size;
+                    const head = {
+                        Bucket: params.s3.bucket,
+                        Key: params.s3.key,
+                    };
 
-                    exports.resolveConfig(inputInfo.prefix, function (err, configData) {
-                        /*
-                         * we did get a configuration found by the resolveConfig
-                         * method
-                         */
+                    // We do not include the size in the SQS message, so get in from s3 object head.
+                    s3.headObject(head, function (err, headData) {
                         if (err) {
-                            console.log(JSON.stringify(err));
+                            console.log(err);
                             context.done(error, JSON.stringify(err));
                         } else {
-                            // update the inputInfo prefix to match the
-                            // resolved
-                            // config entry
-                            inputInfo.prefix = configData.Item.s3Prefix.S;
 
-                            if (debug) {
-                                console.log(JSON.stringify(inputInfo));
-                            }
+                            // add the object size to inputInfo
+                            inputInfo.size = headData.ContentLength;
+                            console.log('full inputInfo' + JSON.stringify(inputInfo));
 
-                            // call the foundConfig method with the data
-                            // item
-                            exports.foundConfig(inputInfo, null, configData);
+
+                            exports.resolveConfig(inputInfo.prefix, function (err, configData) {
+                                /*
+                                 * we did get a configuration found by the resolveConfig
+                                 * method
+                                 */
+                                if (err) {
+                                    console.log(JSON.stringify(err));
+                                    context.done(error, JSON.stringify(err));
+                                } else {
+                                    // update the inputInfo prefix to match the
+                                    // resolved
+                                    // config entry
+                                    inputInfo.prefix = configData.Item.s3Prefix.S;
+
+                                    if (debug) {
+                                        console.log(JSON.stringify(inputInfo));
+                                    }
+
+                                    // call the foundConfig method with the data
+                                    // item
+                                    exports.foundConfig(inputInfo, null, configData);
+                                }
+                            }, function (err) {
+                                // finish with no exception - where this file sits
+                                // in the S3 structure is not configured for redshift
+                                // loads, or there was an access issue that prevented us
+                                // querying DDB
+                                console.log("No Configuration Found for " + inputInfo.prefix);
+                                console.log(err);
+
+                                context.done(error, JSON.stringify(err));
+                            });
                         }
-                    }, function (err) {
-                        // finish with no exception - where this file sits
-                        // in the S3 structure is not configured for redshift
-                        // loads, or there was an access issue that prevented us
-                        // querying DDB
-                        console.log("No Configuration Found for " + inputInfo.prefix);
-                        console.log(err);
-
-                        context.done(error, JSON.stringify(err));
                     });
                 }
-
             }
         }
     } catch (e) {
+        console.log(e.stack);
+
         console.log("Unhandled Exception");
         console.log(JSON.stringify(e));
         console.log(JSON.stringify(event));
