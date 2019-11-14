@@ -16,7 +16,7 @@ if (!region || region === null || region === "") {
     console.log("AWS Lambda Redshift Database Loader using default region " + region);
 }
 
-var aws = require('aws-sdk');
+const aws = require('aws-sdk');
 aws.config.update({
     region: region
 });
@@ -37,7 +37,7 @@ const dynamoDB = new aws.DynamoDB({
     apiVersion: '2012-08-10',
     region: region
 });
-var sns = new aws.SNS({
+const sns = new aws.SNS({
     apiVersion: '2010-03-31',
     region: region
 });
