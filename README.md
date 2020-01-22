@@ -127,23 +127,23 @@ __Launch Links__
 
 | Region | Launch Cloudformation Stack|
 |---- | ---- |
-|eu-north-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=eu-north-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-eu-north-1.amazonaws.com/awslabs-code-eu-north-1/LambdaRedshiftLoader/deploy.yaml) |
-|ap-south-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=ap-south-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-ap-south-1.amazonaws.com/awslabs-code-ap-south-1/LambdaRedshiftLoader/deploy.yaml) |
-|eu-west-3 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=eu-west-3#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-eu-west-3.amazonaws.com/awslabs-code-eu-west-3/LambdaRedshiftLoader/deploy.yaml) |
-|eu-west-2 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=eu-west-2#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-eu-west-2.amazonaws.com/awslabs-code-eu-west-2/LambdaRedshiftLoader/deploy.yaml) |
-|eu-west-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-eu-west-1.amazonaws.com/awslabs-code-eu-west-1/LambdaRedshiftLoader/deploy.yaml) |
-|ap-northeast-3 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-3#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-ap-northeast-3.amazonaws.com/awslabs-code-ap-northeast-3/LambdaRedshiftLoader/deploy.yaml) |
-|ap-northeast-2 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-2#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-ap-northeast-2.amazonaws.com/awslabs-code-ap-northeast-2/LambdaRedshiftLoader/deploy.yaml) |
-|ap-northeast-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-ap-northeast-1.amazonaws.com/awslabs-code-ap-northeast-1/LambdaRedshiftLoader/deploy.yaml) |
-|sa-east-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=sa-east-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-sa-east-1.amazonaws.com/awslabs-code-sa-east-1/LambdaRedshiftLoader/deploy.yaml) |
-|ca-central-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=ca-central-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-ca-central-1.amazonaws.com/awslabs-code-ca-central-1/LambdaRedshiftLoader/deploy.yaml) |
-|ap-southeast-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-ap-southeast-1.amazonaws.com/awslabs-code-ap-southeast-1/LambdaRedshiftLoader/deploy.yaml) |
-|ap-southeast-2 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-ap-southeast-2.amazonaws.com/awslabs-code-ap-southeast-2/LambdaRedshiftLoader/deploy.yaml) |
-|eu-central-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=eu-central-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-eu-central-1.amazonaws.com/awslabs-code-eu-central-1/LambdaRedshiftLoader/deploy.yaml) |
-|us-east-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-us-east-1.amazonaws.com/awslabs-code-us-east-1/LambdaRedshiftLoader/deploy.yaml) |
-|us-east-2 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-us-east-2.amazonaws.com/awslabs-code-us-east-2/LambdaRedshiftLoader/deploy.yaml) |
-|us-west-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=us-west-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-us-west-1.amazonaws.com/awslabs-code-us-west-1/LambdaRedshiftLoader/deploy.yaml) |
-|us-west-2 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png">](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://s3-us-west-2.amazonaws.com/awslabs-code-us-west-2/LambdaRedshiftLoader/deploy.yaml) |
+|eu-north-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=eu-north-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-eu-north-1.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|ap-south-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=ap-south-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-ap-south-1.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|eu-west-3 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=eu-west-3#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-eu-west-3.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|eu-west-2 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=eu-west-2#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-eu-west-2.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|eu-west-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-eu-west-1.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|ap-northeast-3 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-3#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-ap-northeast-3.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|ap-northeast-2 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-2#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-ap-northeast-2.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|ap-northeast-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-ap-northeast-1.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|sa-east-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=sa-east-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-sa-east-1.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|ca-central-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=ca-central-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-ca-central-1.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|ap-southeast-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-ap-southeast-1.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|ap-southeast-2 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-ap-southeast-2.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|eu-central-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=eu-central-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-eu-central-1.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|us-east-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-us-east-1.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|us-east-2 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-us-east-2.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|us-west-1 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=us-west-1#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-us-west-1.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
+|us-west-2 |  [<img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png" target=\”_blank\”>](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=LambdaRedshiftLoader&templateURL=https://awslabs-code-us-west-2.s3.amazonaws.com/LambdaRedshiftLoader/deploy.yaml) |
 
 ## Installing Manually
 
@@ -169,23 +169,41 @@ credentials to Redshift for the COPY command:
                 "dynamodb:PutItem",
                 "dynamodb:Query",
                 "dynamodb:Scan",
-                "dynamodb:UpdateItem",
+                "dynamodb:UpdateItem"
+            ],
+            "Resource": [
+                "arn:aws:dynamodb:<my region>:<my account>:table/LambdaRedshiftBatches",
+                "arn:aws:dynamodb:<my region>:<my account>:table/LambdaRedshiftBatchLoadConfig",
+                "arn:aws:dynamodb:<my region>:<my account>:table/LambdaRedshiftProcessedFiles"              
+            ]
+        },
+        {
+            "Sid": "Stmt1424787824001",
+            "Effect": "Allow",
+            "Action": [
                 "sns:GetEndpointAttributes",
                 "sns:GetSubscriptionAttributes",
                 "sns:GetTopicAttributes",
                 "sns:ListTopics",
                 "sns:Publish",
                 "sns:Subscribe",
-                "sns:Unsubscribe",
-                "s3:Get*",
-                "s3:Put*",
-                "s3:List*",
+                "sns:Unsubscribe"
+            ],
+            "Resource": [
+                "arn:aws:sns:<my region>:<my account>:<success topic>",
+                "arn:aws:sns:<my region>:<my account>:<failure topic>"              
+            ]
+        },
+        {
+            "Sid": "Stmt1424787824002",
+            "Effect": "Allow",
+            "Action": [
                 "kms:Decrypt",
                 "kms:DescribeKey",
                 "kms:GetKeyPolicy"
             ],
             "Resource": [
-                "*"
+                "arn:aws:kms:<my region>:<my account>:key/<key name>"
             ]
         }
     ]
@@ -311,7 +329,7 @@ an Access Key and Secret Key which will be used instead, and the setup utility w
 
 Redshift supports two options for connecting to the cluster: [IAM Role based authentication](https://docs.aws.amazon.com/redshift/latest/mgmt/generating-user-credentials.html), and Username/Password based authentication. While we highly recommend using IAM Role based authentication, it is not avialable with this utility as it requires the use of the [Redshift JDBC Driver](https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html#download-jdbc-driver), which we don't yet support in this module.
 
-The database password, as well as the master symmetric key used for encryption operations, must be encrypted by the Amazon Key Management Service before running the setup utility. To perform this encryption, you will use the `encryptValue.js` script supplied with this project. The encryption is done with a KMS Customer Master Key with an alias named `alias/LambaRedshiftLoaderKey`. If you supply an unencrypted password to the setup scripts, they will store the value in Dynamodb (__BAD__), but these will not be usable by the system as it will throw a decryption error on execution.
+The database password, as well as the master symmetric key used for encryption operations, must be encrypted by the Amazon Key Management Service before running the setup utility. To perform this encryption, you will use the `encryptValue.js` script supplied with this project. The encryption is done with a KMS Customer Master Key with an alias named `alias/LambdaRedshiftLoaderKey`. If you supply an unencrypted password to the setup scripts, they will store the value in Dynamodb (__BAD__), but these will not be usable by the system as it will throw a decryption error on execution.
 
 If you would like support for storage of passwords in the [SSM Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html), please [+1 this issue](https://github.com/awslabs/aws-lambda-redshift-loader/issues/178).
 
