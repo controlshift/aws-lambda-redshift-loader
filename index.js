@@ -1461,6 +1461,9 @@ exports.handler = function (event, context) {
                     console.log(msg);
 
                     context.done(error, msg);
+                } else if (params.table === 'signatures' && params.kind === 'full') {
+                    console.log("Skipping full table export of signatures, these are processed with AWS Glue");
+                    context.done(null, null);
                 } else {
 
                     // extract the s3 details from the event
