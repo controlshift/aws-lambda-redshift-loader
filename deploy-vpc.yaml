@@ -6,20 +6,39 @@
 #The config script will use the key by its alias
 #
 #Parameters and notes
+#
+#AvailabilityZone - Note that the stack will create in the current region by default, and
+#                   the list of availability zones available will be created based on the
+#                   region in which the user is creating the CloudFormation stack
+#SecurityGroup    - sets up the networking.  Will require SSH and default Redshift port 
+#                   access.
+#KeyName          - the access key for SSH access to the driver EC2 instance.
+#SubnetId         - The subnet within your selected availability zone to use for the 
+#                   driver EC2 instance.  Note that CloudFormation will *not* cross-check
+#                   at runtime to verify that the subnet and availability zone match.
 
 
-AWSTemplateFormatVersion: "2010-09-09" 
+
+AWSTemplateFormatVersion: "2010-09-09"   
 Parameters:  
  KmsKeyArn:
-   Description: "The KMS Key to use for Encryption"
+   Description: "The KMS Key to use for Encryption of the database password"
    Type: String
+ SecurityGroups:
+   Default: mygroup1, mygroup2
+   Description: Security Groups as CSV list to use for the deployed function (may be required for Redshift security policy)
+   Type: CommaDelimitedList
+ SubnetIds:
+   Default: subnet1, subnet2, subnet3
+   Description: List of private Subnets in VPC in which the function will egress network connections
+   Type: CommaDelimitedList   
         
 Resources: 
   RedshiftLoaderIamPolicy: 
     Type: "AWS::IAM::Policy"
     Properties:
       PolicyName: "RedshiftLambdaLoaderPolicy"
-      Roles:
+      Roles:        
           - !Ref LambdaTriggerRole
       PolicyDocument: 
         Version: "2012-10-17"
@@ -75,7 +94,9 @@ Resources:
   LambdaTriggerRole: 
     Type: "AWS::IAM::Role"
     Properties:
-      Path: "/"      
+      Path: "/"
+      ManagedPolicyArns:
+          - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"      
       AssumeRolePolicyDocument: 
         Version: "2012-10-17"
         Statement: 
@@ -86,7 +107,7 @@ Resources:
                 - lambda.amazonaws.com
             Action: 
               - sts:AssumeRole
-        
+
   LambdaTriggerFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -98,7 +119,10 @@ Resources:
           - Arn
       Code:
         S3Bucket: !Sub awslabs-code-${AWS::Region}
-        S3Key: 'LambdaRedshiftLoader/AWSLambdaRedshiftLoader-2.7.7.zip'
+        S3Key: 'LambdaRedshiftLoader/AWSLambdaRedshiftLoader-2.7.7  .zip'
       Runtime: nodejs12.x
-
- 
+      VpcConfig:
+        SecurityGroupIds:
+          !Ref SecurityGroups
+        SubnetIds:
+          !Ref SubnetIds 
