@@ -1593,7 +1593,7 @@ function handler(event, context) {
                                 context.done(err, JSON.stringify(err));
                             });
                         }
-                    })
+                    });
                 }
             }
         }
