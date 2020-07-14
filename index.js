@@ -1557,7 +1557,6 @@ function handler(event, context) {
                             inputInfo.size = headData.ContentLength;
                             console.log('full inputInfo' + JSON.stringify(inputInfo));
 
-
                             resolveConfig(inputInfo.prefix, function (err, configData) {
 
                                 /*
@@ -1565,43 +1564,36 @@ function handler(event, context) {
                                  * method
                                  */
                                 if (err) {
-                                    console.log(JSON.stringify(err));
-                                    context.done(error, JSON.stringify(err));
-                                } else {
+                                    logger.error(JSON.stringify(err));
+                                    context.done(err, JSON.stringify(err));
+                                }
+                                else {
                                     // update the inputInfo prefix to match the
                                     // resolved
                                     // config entry
                                     inputInfo.prefix = configData.Item.s3Prefix.S;
 
-                                    logger.debug(JSON.stringify(inputInfo))
+                                    logger.debug(JSON.stringify(inputInfo));
 
                                     // call the foundConfig method with the data
                                     // item
                                     foundConfig(inputInfo, null, configData);
                                 }
-                            }, function (err) {
+                            },
+                            function(err) {
                                 // finish with no exception - where this file sits
                                 // in the S3 structure is not configured for redshift
                                 // loads, or there was an access issue that prevented us
                                 // querying DDB
-                                console.log("No Configuration Found for " + inputInfo.prefix);
-                                console.log(err);
+                                logger.error("No Configuration Found for " + inputInfo.prefix);
+                                if (err) {
+                                    logger.error(err);
+                                }
 
-                                context.done(error, JSON.stringify(err));
+                                context.done(err, JSON.stringify(err));
                             });
                         }
-
-                        // finish with no exception - where this file sits
-                        // in the S3 structure is not configured for redshift
-                        // loads, or there was an access issue that prevented us
-                        // querying DDB
-                        logger.error("No Configuration Found for " + inputInfo.prefix);
-                        if (err) {
-                            logger.error(err);
-                        }
-
-                        context.done(err, JSON.stringify(err));
-                    });
+                    })
                 }
             }
         }
