@@ -11,6 +11,7 @@ var debug = (process.env['DEBUG'] === 'true');
 var log_level = process.env['LOG_LEVEL'] || 'info';
 var pjson = require('./package.json');
 var region = process.env['AWS_REGION'];
+var controlshift_region = process.env['CONTROLSHIFT_REGION'];
 
 if (!region || region === null || region === "") {
     region = "us-east-1";
@@ -1213,6 +1214,10 @@ function handler(event, context) {
                 // if the post-sql option is set, insert it into the copyCommand
                 if (clusterInfo.postsql && clusterInfo.postsql.S) {
                     copyCommand += clusterInfo.postsql.S + (clusterInfo.postsql.S.slice(-1) == ";" ? "" : ";") + '\n'
+                }
+
+                if(controlshift_region) {
+                    copyCommand += " REGION \'"+ controlshift_region +"\' "
                 }
 
                 copyCommand += 'commit;';
