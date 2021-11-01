@@ -156,6 +156,9 @@ You can set the logging behaviour of the function by adding environment variable
 
 * `DEBUG` Sets log level debug and all messages will be shown in CloudWatch Logs
 * `LOG_LEVEL` Sets the log level to whatever you require, per [Winston documentation](https://github.com/winstonjs/winston#logging-levels)
+* `OVERRIDE_CONFIG_TABLE` Change the DynamoDB config table name
+* `OVERRIDE_FILES_TABLE` Change the DynamoDB files table name
+* `OVERRIDE_BATCH_TABLE` Change the DynamoDB batch table name
 
 ## Installing Manually
 
