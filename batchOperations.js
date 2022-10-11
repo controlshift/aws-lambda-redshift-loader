@@ -2,7 +2,6 @@ var aws = require('aws-sdk');
 require('./constants');
 var common = require('./common');
 var async = require('async');
-var debug = true;
 var dynamoDB;
 var s3;
 var debug = (process.env['DEBUG'] === 'true');
@@ -10,12 +9,12 @@ var log_level = process.env['LOG_LEVEL'] || 'info';
 const winston = require('winston');
 
 const logger = winston.createLogger({
-  level: debug === true ? 'debug' : log_level,
-  transports: [
-    new winston.transports.Console({
-        format: winston.format.simple()
-    })
-  ]
+    level: debug === true ? 'debug' : log_level,
+    transports: [
+        new winston.transports.Console({
+            format: winston.format.simple()
+        })
+    ]
 });
 
 /**
@@ -151,7 +150,7 @@ function doQuery(setRegion, batchStatus, queryStartDate, queryEndDate, callback)
     queryParams.ExpressionAttributeNames = keyConditionNames;
     queryParams.ExpressionAttributeValues = keyConditionValues;
 
-    if (debug == true) {
+    if (debug === true) {
         console.log(queryParams);
     }
 
@@ -191,7 +190,9 @@ exports.doQuery = doQuery;
  * @param callback
  * @returns
  */
-function deleteBatch(s3Prefix, batchId, callback) {
+function deleteBatch(setRegion, s3Prefix, batchId, callback) {
+    init(setRegion);
+
     var deleteParams = {
         TableName: batchTable,
         Key: {
@@ -237,7 +238,7 @@ function deleteBatches(setRegion, batchStatus, startDate, endDate, dryRun, callb
                 async.map(data, function (batchItem, asyncCallback) {
                     // pass the request through the function that deletes the
                     // item from DynamoDB
-                    deleteBatch(batchItem.s3Prefix, batchItem.batchId, function (err, data) {
+                    deleteBatch(setRegion, batchItem.s3Prefix, batchItem.batchId, function (err, data) {
                         if (err) {
                             asyncCallback(err);
                         } else {
@@ -282,11 +283,11 @@ function reprocessBatch(s3Prefix, batchId, region, omitFiles, callback) {
             callback(err);
         } else {
             if (data) {
-                if (!data.entries.SS) {
+                if (!data.entries && !data.entryMap) {
                     msg = "Batch is Empty!";
                     logger.info(msg);
                     callback(msg);
-                } else if (data.status.S === open) {
+                } else if (data.status.S === "open") {
                     msg = "Cannot reprocess an Open Batch";
                     logger.error(msg);
                     callback(msg);
@@ -311,14 +312,35 @@ function reprocessBatch(s3Prefix, batchId, region, omitFiles, callback) {
                             // create a list of files which filters out the omittedFiles
                             var processFiles = [];
                             if (omitFiles) {
-                                data.entries.SS.map(function (item) {
-                                    if (omitFiles.indexOf(item) === -1) {
-                                        // file is not in the omit list, so add it to the process list
-                                        processFiles.push(item);
-                                    }
-                                });
+                                if (data.entries) {
+                                    data.entries.SS.map(function (item) {
+                                        if (omitFiles.indexOf(item) === -1) {
+                                            // file is not in the omit list, so add it to the process list
+                                            processFiles.push(item);
+                                        }
+                                    });
+                                }
+
+                                if (data.entryMap) {
+                                    data.entryMap.L.map(function (item) {
+                                        if (omitFiles.indexOf(item.file.S) === -1) {
+                                            // file is not in the omit list, so add it to the process list
+                                            processFiles.push(item.M.file.S);
+                                        }
+                                    });
+                                }
                             } else {
-                                processFiles = data.entries.SS;
+                                // add pre 2.7.9 StringSet entries
+                                if (data.entries) {
+                                    processFiles = data.entries.SS;
+                                }
+
+                                // add 2.7.0 and forward entryMap list
+                                if (data.entryMap) {
+                                    data.entryMap.L.map(function (item) {
+                                        processFiles.push(item.M.file.S);
+                                    });
+                                }
                             }
 
                             // for each of the current file entries, execute the processedFiles reprocess method

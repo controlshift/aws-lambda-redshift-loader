@@ -11,6 +11,7 @@ var debug = (process.env['DEBUG'] === 'true');
 var log_level = process.env['LOG_LEVEL'] || 'info';
 var pjson = require('./package.json');
 var region = process.env['AWS_REGION'];
+let semver = require('semver');
 var controlshift_region = process.env['CONTROLSHIFT_AWS_REGION'];
 
 if (!region || region === null || region === "") {
@@ -67,29 +68,8 @@ require('pg-ka-fix')();
 
 var upgrade = require('./upgrades');
 
-String.prototype.shortenPrefix = function () {
-    var tokens = this.split("/");
-
-    if (tokens && tokens.length > 0) {
-        return tokens.slice(0, tokens.length - 1).join("/");
-    }
-};
-
-String.prototype.transformHiveStylePrefix = function () {
-    // transform hive style dynamic prefixes into static
-    // match prefixes
-
-    var tokeniseSearchKey = this.split('/');
-    var regex = /\=(.*)/;
-
-    var processedTokens = tokeniseSearchKey.map(function (item) {
-        if (item) {
-            return item.replace(regex, "=*");
-        }
-    });
-
-    return processedTokens.join('/');
-};
+// load the list of prefixes where wildcard expansion should be suppressed. this can be a blanket switch if set to *
+let suppressWildcardPrefixes = common.getWildcardPrefixSuppressionList();
 
 function getConfigWithRetry(prefix, callback) {
     var proceed = false;
@@ -200,8 +180,8 @@ function handler(event, context) {
 	 */
     function upgradeConfig(s3Info, currentConfig, callback) {
         // v 1.x to 2.x upgrade for multi-cluster loaders
-        if (currentConfig.version !== pjson.version) {
-            logger.debug(`Performing version upgrade from ${currentConfig.version} to ${pjson.version}`);
+        if (semver.lt(currentConfig.version.S, pjson.version)) {
+            logger.debug(`Performing version upgrade from ${currentConfig.version.S} to ${pjson.version}`);
             upgrade.upgradeAll(dynamoDB, s3Info, currentConfig, callback);
         } else {
             // no upgrade needed
@@ -361,13 +341,22 @@ function handler(event, context) {
                         }
                     },
                     TableName: batchTable,
-                    UpdateExpression: "add entries :entry, writeDates :appendFileDate, size :size set #stat = :open, lastUpdate = :updateTime",
+                    UpdateExpression: "add writeDates :appendFileDate, size :size set #stat = :open, lastUpdate = :updateTime, entryMap = list_append(if_not_exists(entryMap, :emptyList), :entry)",
                     ExpressionAttributeNames: {
                         "#stat": 'status'
                     },
                     ExpressionAttributeValues: {
                         ":entry": {
-                            SS: [itemEntry]
+                            L: [{
+                                M: {
+                                    "file": {S: itemEntry},
+                                    "size": {N: '' + s3Info.size}
+                                }
+                            }
+                            ]
+                        },
+                        ":emptyList": {
+                            L: []
                         },
                         ":appendFileDate": {
                             NS: ['' + now]
@@ -387,6 +376,8 @@ function handler(event, context) {
 					 */
                     ConditionExpression: "#stat = :open or attribute_not_exists(#stat)"
                 };
+
+                logger.debug(JSON.stringify(item));
 
                 // add the file to the pending batch
                 dynamoDB.updateItem(item, function (err, data) {
@@ -481,7 +472,7 @@ function handler(event, context) {
                             /*
 							 * process what happened if the iterative request to
 							 * write to the open pending batch timed out
-							 * 
+							 *
 							 * TODO Can we force a rotation of the current batch
 							 * at this point?
 							 */
@@ -653,21 +644,35 @@ function handler(event, context) {
                     }
                 });
                 var lastUpdateTime = data.Item.lastUpdate.N;
-                var pendingEntries = data.Item.entries.SS;
+
+                /*
+                 * grab the pending entries from the locked
+                 * batch. We have 2 copies - a batch that uses StringSet from pre 2.7.8, and a List from 2.7.9
+                */
+                let pendingEntries = {};
+                let pendingEntryCount = 0;
+                if (data.Item.entryMap) {
+                    pendingEntryCount += data.Item.entryMap.L.length;
+                    pendingEntries["entryMap"] = data.Item.entryMap.L;
+                }
+                if (data.Item.entrySet) {
+                    pendingEntryCount += data.Item.entries.SS.length;
+                    pendingEntries["entrySet"] = data.Item.entries.SS;
+                }
                 var doProcessBatch = false;
 
-                if (!pendingEntries || pendingEntries.length >= parseInt(config.batchSize.N)) {
+                if (pendingEntryCount >= parseInt(config.batchSize.N)) {
                     logger.info("Batch count " + config.batchSize.N + " reached");
                     doProcessBatch = true;
                 } else {
                     if (config.batchSize && config.batchSize.N) {
-                        logger.debug("Current batch count of " + pendingEntries.length + " below batch limit of " + config.batchSize.N);
+                        logger.debug("Current batch count of " + pendingEntryCount + " below batch limit of " + config.batchSize.N);
                     }
                 }
 
                 // check whether the current batch is bigger than the configured
                 // max count, size, or older than configured max age
-                if (config.batchTimeoutSecs && config.batchTimeoutSecs.N && pendingEntries.length > 0 && common.now() - batchCreateDate > parseInt(config.batchTimeoutSecs.N)) {
+                if (config.batchTimeoutSecs && config.batchTimeoutSecs.N && pendingEntryCount > 0 && common.now() - batchCreateDate > parseInt(config.batchTimeoutSecs.N)) {
                     logger.info("Batch age " + config.batchTimeoutSecs.N + " seconds reached");
                     doProcessBatch = true;
                 } else {
@@ -677,7 +682,7 @@ function handler(event, context) {
                     }
                 }
 
-                if (config.batchSizeBytes && config.batchSizeBytes.N && pendingEntries.length > 0 && parseInt(config.batchSizeBytes.N) <= parseInt(data.Item.size.N)) {
+                if (config.batchSizeBytes && config.batchSizeBytes.N && pendingEntryCount > 0 && parseInt(config.batchSizeBytes.N) <= parseInt(data.Item.size.N)) {
                     logger.info("Batch size " + config.batchSizeBytes.N + " bytes reached");
                     doProcessBatch = true;
                 } else {
@@ -758,12 +763,6 @@ function handler(event, context) {
                                 context.done(error, e);
                             } else {
                                 /*
-								 * grab the pending entries from the locked
-								 * batch
-								 */
-                                pendingEntries = data.Attributes.entries.SS;
-
-                                /*
 								 * assign the loaded configuration a new batch
 								 * ID
 								 */
@@ -829,23 +828,36 @@ function handler(event, context) {
 
         logger.debug("Building new COPY Manifest");
 
-        for (var i = 0; i < batchEntries.length; i++) {
-            /*
-			 * fix url encoding for files with spaces. Space values come in from
-			 * Lambda with '+' and plus values come in as %2B. Redshift wants
-			 * the original S3 value
-			 */
-            u = 's3://' + batchEntries[i].replace(/\+/g, ' ').replace(/%2B/g, '+')
-
-            logger.debug(u);
-
+        function addEntry(url, contentLength) {
             manifestContents.entries.push({
-                url: u,
-                mandatory: true
+                /*
+                 * fix url encoding for files with spaces. Space values come in from
+                 * Lambda with '+' and plus values come in as %2B. Redshift wants
+                 * the original S3 value
+                 */
+                url: 's3://' + url.replace(/\+/g, ' ').replace(/%2B/g, '+'),
+                mandatory: true,
+                meta: {
+                    content_length: contentLength
+                }
             });
         }
 
-        var s3PutParams = {
+        // process the batch contents which are structured as a map listing filename and file size
+        if (batchEntries.entryMap) {
+            batchEntries.entryMap.map(function (batchEntry) {
+                addEntry(batchEntry.M.file.S, parseInt(batchEntry.M.size.N));
+            });
+        }
+
+        // process batch contents which are structured as a StringSet
+        if (batchEntries.entrySet) {
+            batchEntries.entrySet.map(function (batchEntry) {
+                addEntry(batchEntry, s3Info.size);
+            });
+        }
+
+        let s3PutParams = {
             Bucket: manifestInfo.manifestBucket,
             Key: manifestInfo.manifestPrefix,
             Body: JSON.stringify(manifestContents)
@@ -854,15 +866,15 @@ function handler(event, context) {
         logger.info("Writing manifest to " + manifestInfo.manifestBucket + "/" + manifestInfo.manifestPrefix);
 
         /*
-		 * save the manifest file to S3 and build the rest of the copy command
-		 * in the callback letting us know that the manifest was created
-		 * correctly
-		 */
+         * save the manifest file to S3 and build the rest of the copy command
+         * in the callback letting us know that the manifest was created
+         * correctly
+         */
         s3.putObject(s3PutParams, loadRedshiftWithManifest.bind(undefined, config, thisBatchId, s3Info, manifestInfo));
     };
 
     /**
-     * Function run when the Redshift manifest write completes succesfully
+     * Function run when the Redshift manifest write completes successfully
      */
     function loadRedshiftWithManifest(config, thisBatchId, s3Info, manifestInfo, err, data) {
         if (err) {
@@ -969,6 +981,9 @@ function handler(event, context) {
         var lastError;
 
         async.until(function (test_cb) {
+            if (retryCount > 1) {
+                logger.info("Retrying PG Query: attempt " + retryCount);
+            }
             test_cb(null, completed || !retries || retryCount >= retries);
         }, function (asyncCallback) {
             logger.debug("Performing Database Command:");
@@ -997,14 +1012,12 @@ function handler(event, context) {
                         }
                         asyncCallback(queryCommandErr);
                     } else {
-                        // incre ment the retry count
+                        // increment the retry count
                         retryCount += 1;
 
                         logger.warn("Retryable Error detected. Try Attempt " + retryCount);
 
-                        // exponential backoff
-                        // if a backoff time is
-                        // provided
+                        // exponential backoff if a backoff time is provided
                         if (retryBackoffBaseMs) {
                             setTimeout(function () {
                                 // call the async callback
@@ -1171,7 +1184,7 @@ function handler(event, context) {
                     } else {
                         copyOptions = copyOptions + ' \'auto\' \n';
                     }
-                } else if (config.dataFormat.S === 'Parquet' || config.dataFormat.S === 'ORC') {
+                } else if (config.dataFormat.S === 'PARQUET' || config.dataFormat.S === 'ORC') {
                     copyOptions = copyOptions + ' format as ' + config.dataFormat.S;
                 } else {
                     callback(null, {
@@ -1243,18 +1256,54 @@ function handler(event, context) {
                     logger.info("Connecting to Database " + clusterInfo.clusterEndpoint.S + ":" + clusterInfo.clusterPort.N);
                 }
 
+                // prepare the ssl string for the connection, if we have cert env variable
+                let ssl_file = undefined;
+
+                if (process.env['CLUSTER_SSL_CERT_S3_PATH']) {
+                    let s3paths = [process.env['CLUSTER_SSL_CERT_S3_PATH']];
+                    async.map({
+                        s3paths,
+                        function(item, callback) {
+                            let tokens = item.split('/');
+                            let bucket = tokens.slice(2, 1);
+                            let key = tokens.slice(3).join('/');
+
+                            s3.getObject({Bucket: bucket, Key: key}, function (err, data) {
+                                if (err) {
+                                    callback(err);
+                                } else {
+                                    let fileBody = data.Body.toString('utf8');
+                                    callback(null, fileBody)
+                                }
+                            })
+                        },
+                        function(err, results) {
+                            ssl_file = results;
+                        }
+                    })
+                }
+
+                let clientArgs = {
+                    connectionString: dbString
+                }
+                if (ssl_file) {
+                    clientArgs['ssl'] = {
+                        'ca': ssl_file
+                    }
+                }
+
                 /*
 				 * connect to database and run the copy command
 				 */
-                const pgClient = new Client({
-                    connectionString: dbString
-                });
+                let pgClient = new Client(clientArgs);
+
+                logger.debug("Constructed new Postgres client");
 
                 pgClient.connect((err) => {
                     if (err) {
                         logger.error(err);
 
-                        callback(null, {
+                        callback(err, {
                             status: ERROR,
                             error: err,
                             cluster: clusterInfo.clusterEndpoint.S
@@ -1268,6 +1317,7 @@ function handler(event, context) {
 						 * backoff from 30ms with 5 retries - giving a max retry
 						 * duration of ~ 1 second
 						 */
+                        logger.info("Connected");
                         runPgCommand(clusterInfo, pgClient, copyCommand, 5, ["S3ServiceException:The specified key does not exist.,Status 404"], 30, callback);
                     }
                 });
@@ -1518,11 +1568,11 @@ function handler(event, context) {
 
                 if (params.s3 === undefined) {
                     const msg = "Missing s3 data in webhook, must add AWS Account ID to ControlShift ";
-                    console.log(msg);
+                    logger.error(msg);
 
                     context.done(error, msg);
                 } else if (params.table === 'signatures' && params.kind === 'full') {
-                    console.log("Skipping full table export of signatures, these are processed with AWS Glue");
+                    logger.info("Skipping full table export of signatures, these are processed with AWS Glue");
                     context.done(null, null);
 
                 } else {
@@ -1532,6 +1582,7 @@ function handler(event, context) {
                         bucket: undefined,
                         key: undefined,
                         prefix: undefined,
+                        size: undefined,
                         inputFilename: undefined
                     };
 
@@ -1545,7 +1596,8 @@ function handler(event, context) {
                     // for this ingest.
                     inputInfo.prefix = `${params.s3.bucket}/${params.kind}/${params.table}`;
 
-                    console.log('inputInfo ' + JSON.stringify(inputInfo));
+
+                    logger.debug('inputInfo ' + JSON.stringify(inputInfo));
 
                     const head = {
                         Bucket: params.s3.bucket,
@@ -1555,24 +1607,22 @@ function handler(event, context) {
                     // We do not include the size in the SQS message, so get in from s3 object head.
                     s3.headObject(head, function (err, headData) {
                         if (err) {
-                            console.log(err);
-                            context.done(error, JSON.stringify(err));
+                            logger.error(JSON.stringify(err));
+                            context.done(err, JSON.stringify(err));
                         } else {
                             // add the object size to inputInfo
                             inputInfo.size = headData.ContentLength;
-                            console.log('full inputInfo' + JSON.stringify(inputInfo));
+                            logger.debug('full inputInfo' + JSON.stringify(inputInfo));
 
                             resolveConfig(inputInfo.prefix, function (err, configData) {
-
                                 /*
                                  * we did get a configuration found by the resolveConfig
                                  * method
-                                 */
+                                */
                                 if (err) {
                                     logger.error(JSON.stringify(err));
                                     context.done(err, JSON.stringify(err));
-                                }
-                                else {
+                                } else {
                                     // update the inputInfo prefix to match the
                                     // resolved
                                     // config entry
@@ -1584,8 +1634,7 @@ function handler(event, context) {
                                     // item
                                     foundConfig(inputInfo, null, configData);
                                 }
-                            },
-                            function(err) {
+                            }, function (err) {
                                 // finish with no exception - where this file sits
                                 // in the S3 structure is not configured for redshift
                                 // loads, or there was an access issue that prevented us
