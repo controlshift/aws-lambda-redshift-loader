@@ -180,7 +180,7 @@ function handler(event, context) {
 	 */
     function upgradeConfig(s3Info, currentConfig, callback) {
         // v 1.x to 2.x upgrade for multi-cluster loaders
-        if (semver.lt(currentConfig.version.S, pjson.version)) {
+        if (currentConfig.version && semver.lt(currentConfig.version.S, pjson.version)) {
             logger.debug(`Performing version upgrade from ${currentConfig.version.S} to ${pjson.version}`);
             upgrade.upgradeAll(dynamoDB, s3Info, currentConfig, callback);
         } else {
