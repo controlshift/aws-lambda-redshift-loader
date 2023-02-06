@@ -10,7 +10,7 @@
     "dependencies": {
         "async": "3.2.4",
         "aws-sdk": "2.1309.0",
-        "color-string": "1.8.2",
+        "color-string": "1.9.1",
         "expect": "27.4.2",
         "https-proxy-agent": "5.0.1",
         "lodash": "4.17.21",
