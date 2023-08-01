@@ -9,7 +9,7 @@
     },
     "dependencies": {
         "async": "3.2.4",
-        "aws-sdk": "2.1409.0",
+        "aws-sdk": "2.1426.0",
         "color-string": "1.9.1",
         "expect": "27.4.2",
         "https-proxy-agent": "5.0.1",
