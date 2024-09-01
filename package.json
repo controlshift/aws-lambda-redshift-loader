@@ -15,7 +15,7 @@
         "https-proxy-agent": "5.0.1",
         "lodash": "4.17.21",
         "minimist": ">=1.2.6",
-        "mocha": "10.7.0",
+        "mocha": "10.7.3",
         "pg": "8.12.0",
         "pg-ka-fix": "1.0.0-rm-fix",
         "pgpass": "1.0.5",
