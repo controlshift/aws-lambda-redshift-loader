@@ -20,7 +20,7 @@
         "pg-ka-fix": "1.0.0-rm-fix",
         "pgpass": "1.0.5",
         "regex": "^0.1.1",
-        "semver": "7.7.0",
+        "semver": "7.7.1",
         "uuid": "9.0.1",
         "winston": "3.17.0"
     },
