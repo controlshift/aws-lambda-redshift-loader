@@ -11,7 +11,7 @@
         "async": "3.2.6",
         "aws-sdk": "2.1692.0",
         "color-string": "1.9.1",
-        "expect": "27.4.2",
+        "expect": "30.0.3",
         "https-proxy-agent": "5.0.1",
         "lodash": "4.17.21",
         "minimist": ">=1.2.6",
