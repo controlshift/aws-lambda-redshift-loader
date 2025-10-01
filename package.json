@@ -21,7 +21,7 @@
         "pgpass": "1.0.5",
         "regex": "^0.1.1",
         "semver": "7.7.2",
-        "uuid": "9.0.1",
+        "uuid": "13.0.0",
         "winston": "3.18.3"
     },
     "keywords": [
