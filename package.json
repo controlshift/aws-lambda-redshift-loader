@@ -13,7 +13,7 @@
         "color-string": "1.9.1",
         "expect": "27.4.2",
         "https-proxy-agent": "5.0.1",
-        "lodash": "4.17.23",
+        "lodash": "4.18.1",
         "minimist": ">=1.2.6",
         "mocha": "10.8.2",
         "pg": "8.20.0",
